@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Bloco de Notas + Mapa Mental</title>
+  <style>
+  :root {
+    --cor-primaria: #0081E3;
+    --cor-secundaria: #00C670;
+    --cor-destaque: #EDFF7D;
+    --cor-fundo: #0B0C2A;
+    --cor-texto: #F0F0F0;
+    --cor-card: #1C1E3D;
+    --cor-borda: #48C7C4;
+    --cor-hover: #1608DB;
+  }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto);
+    padding: 20px;
+    margin: 0;
+  }
+
+  input, button {
+    padding: 10px;
+    margin: 5px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+
+  input {
+    background-color: #1c1c3a;
+    color: var(--cor-texto);
+    border: 1px solid var(--cor-borda);
+    width: 100%;
+    max-width: 400px;
+  }
+#loginContainer {
+  max-width: 400px;
+  margin: 10vh auto;
+  padding: 30px;
+  background-color: var(--cor-card);
+  border-radius: 15px;
+  box-shadow: 0 8px 16px rgba(0, 198, 112, 0.2);
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+
+  input, button {
+    font-size: 14px;
+    width: 100%;
+  }
+
+  #loginContainer, .nota-card {
+    padding: 20px;
+  }
+
+  .menu button {
+    display: block;
+    margin: 8px 0;
+    width: 100%;
+  }
+}
+
+  button {
+    background: linear-gradient(135deg, var(--cor-secundaria), var(--cor-primaria));
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0, 198, 112, 0.3);
+  }
+
+  button:hover {
+    background: var(--cor-hover);
+    transform: scale(1.05);
+    box-shadow: 0 0 20px var(--cor-destaque);
+  }
+
+  #areaPrincipal {
+    animation: fadeIn 0.7s ease-in-out;
+  }
+
+  .menu button {
+    margin-right: 10px;
+  }
+
+  .nota-card {
+    background-color: var(--cor-card);
+    border: 1px solid var(--cor-borda);
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(72, 199, 196, 0.3);
+    transition: all 0.3s ease-in-out;
+  }
+
+  .nota-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 198, 112, 0.4);
+  }
+
+  
+  #quillEditor {
+    background-color: #1c1c3a;
+    border-radius: 10px;
+    border: 1px solid var(--cor-borda);
+    color: var(--cor-texto);
+  }
+  #drawflow {
+    background-color: #1a1b3a;
+    border: 2px dashed var(--cor-borda);
+    border-radius: 12px;
+    box-shadow: inset 0 0 20px rgba(72, 199, 196, 0.2);
+  }
+
+  h2, h3, h4 {
+    color: var(--cor-destaque);
+    font-weight: 700;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  ::selection {
+    background: var(--cor-destaque);
+    color: #000;
+  }
+</style>
+
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/drawflow/dist/drawflow.min.css" />
+</head>
+<body>
+
+  <div id="loginContainer">
+  <h2>LUMNIS – Bloco de Notas</h2>
+  <input id="email" type="email" placeholder="E-mail"><br>
+  <input id="password" type="password" placeholder="Senha"><br>
+  <button onclick="login()">Entrar</button>
+  <button onclick="register()">Cadastrar</button>
+  <p id="loginErro" style="color: red; margin-top: 10px;"></p>
+
+</div>
+
+  <div id="areaPrincipal">
+    <hr>
+    <div class="menu">
+      <button onclick="abrirSecao('editor')">➕ Nova Nota</button>
+      <button onclick="abrirSecao('listaNotas')">📄 Ver Notas</button>
+      <button onclick="logout()">🚪 Sair</button>
+    </div>
+
+    <div id="editor">
+      <input type="text" id="tituloNota" placeholder="Título da nota"><br><br>
+      <div id="quillEditor" style="height: 200px;"></div><br>
+      <button onclick="salvarNota()">💾 Salvar Nota</button>
+    </div>
+
+    <div id="listaNotas" style="display: none;">
+      <h3>Minhas Notas</h3>
+      <div id="notasContainer"></div>
+    </div>
+
+    <div id="mapaMental" style="display: none;">
+      <h3>Mapa Mental</h3>
+      <div id="drawflow" class="drawflow"></div>
+      <br>
+      <button onclick="salvarMapa()">💾 Salvar Mapa</button>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/drawflow"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-PVTshIFZJQOAR2WEhSk1QAwzyB_nJHE",
+      authDomain: "blocodenotas-6c809.firebaseapp.com",
+      projectId: "blocodenotas-6c809",
+      appId: "1:253672183068:web:6e1970ff00dd62de4f96d9"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+    let quill = null;
+    let editorDrawflow = null;
+    let notaEditandoId = null;
+
+   function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const erroMsg = document.getElementById("loginErro");
+
+  erroMsg.textContent = ""; // limpa erro anterior
+
+  auth.signInWithEmailAndPassword(email, password)
+    .then(user => {
+      currentUser = user.user;
+      document.getElementById("loginContainer").style.display = "none";
+      document.getElementById("areaPrincipal").style.display = "block";
+      initEditor();
+      carregarNotas();
+      carregarMapa();
+    })
+    .catch(err => {
+      let msg = "Tente novamente.";
+      if (err.code === "auth/user-not-found") {
+        msg = "Usuário não encontrado.";
+      } else if (err.code === "auth/wrong-password") {
+        msg = "Senha incorreta.";
+      } else if (err.code === "auth/invalid-email") {
+        msg = "E-mail inválido.";
+      }
+      erroMsg.textContent = msg;
+    });
+}
+
+
+    function register() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => login())
+        .catch(err => alert("Erro ao cadastrar: " + err.message));
+    }
+
+    function logout() {
+      auth.signOut().then(() => location.reload());
+    }
+
+    function initEditor() {
+      if (!quill) {
+        quill = new Quill('#quillEditor', {
+          theme: 'snow',
+          modules: {
+            toolbar: [['bold', 'underline'], [{ color: [] }], ['link'], ['clean'], ['list', 'check']]
+          }
+        });
+      }
+    }
+
+    async function salvarNota() {
+      const titulo = document.getElementById("tituloNota").value;
+      const conteudo = quill.root.innerHTML;
+
+      if (notaEditandoId) {
+        await db.collection("notas").doc(notaEditandoId).update({ titulo, conteudo });
+        notaEditandoId = null;
+        alert("Nota atualizada!");
+      } else {
+        await db.collection("notas").add({
+          uid: currentUser.uid,
+          titulo,
+          conteudo,
+          data: firebase.firestore.Timestamp.now()
+        });
+        alert("Nota salva!");
+      }
+
+      document.getElementById("tituloNota").value = "";
+      quill.root.innerHTML = "";
+      carregarNotas();
+      abrirSecao('listaNotas');
+    }
+
+    async function carregarNotas() {
+      const container = document.getElementById("notasContainer");
+      container.innerHTML = "<p>Carregando...</p>";
+
+      try {
+        const snap = await db.collection("notas")
+          .where("uid", "==", currentUser.uid)
+          .get();
+
+        if (snap.empty) {
+          container.innerHTML = "<p>Nenhuma nota encontrada.</p>";
+          return;
+        }
+
+        container.innerHTML = "";
+
+        snap.forEach(doc => {
+          const nota = doc.data();
+          const div = document.createElement("div");
+          div.className = "nota-card";
+          div.innerHTML = `
+            <h4>${nota.titulo}</h4>
+           <div>${nota.conteudo}</div>
+<button onclick="editarNota('${doc.id}')">✏️ Editar</button>
+
+            <button onclick="apagarNota('${doc.id}')">🗑️ Apagar</button>
+          `;
+          container.appendChild(div);
+        });
+
+      } catch (e) {
+        container.innerHTML = "<p>Erro ao carregar notas.</p>";
+        console.error("Erro ao carregar notas:", e);
+      }
+    }
+
+    function editarNota(id) {
+  db.collection("notas").doc(id).get().then(doc => {
+    if (doc.exists) {
+      const nota = doc.data();
+      document.getElementById("tituloNota").value = nota.titulo;
+      quill.root.innerHTML = nota.conteudo;
+      notaEditandoId = id;
+      abrirSecao('editor');
+    }
+  });
+}
+
+    function apagarNota(id) {
+      if (confirm("Tem certeza que deseja apagar esta nota?")) {
+        db.collection("notas").doc(id).delete().then(() => {
+          carregarNotas();
+        });
+      }
+    }
+
+    function carregarMapa() {
+      const container = document.getElementById("drawflow");
+      editorDrawflow = new Drawflow(container);
+      editorDrawflow.reroute = true;
+      editorDrawflow.start();
+
+      db.collection("mapas").doc(currentUser.uid).get().then(doc => {
+        if (doc.exists) {
+          editorDrawflow.import(doc.data().dados);
+        }
+      });
+    }
+
+    function salvarMapa() {
+      const dados = editorDrawflow.export();
+      db.collection("mapas").doc(currentUser.uid).set({ dados });
+      alert("Mapa mental salvo!");
+    }
+
+    function abrirSecao(secao) {
+      document.getElementById("editor").style.display = "none";
+      document.getElementById("listaNotas").style.display = "none";
+      document.getElementById("mapaMental").style.display = "none";
+      document.getElementById(secao).style.display = "block";
+    }
+
+ auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    document.getElementById("loginContainer").style.display = "none";
+    document.getElementById("areaPrincipal").style.display = "block";
+    initEditor();
+    carregarNotas();
+    carregarMapa();
+  } else {
+    // Nenhum usuário logado, mostra apenas o login
+    document.getElementById("loginContainer").style.display = "block";
+    document.getElementById("areaPrincipal").style.display = "none";
+  }
+});
+
+  </script>
+</body>
+</html>

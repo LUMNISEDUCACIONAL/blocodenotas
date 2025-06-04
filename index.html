@@ -15,12 +15,16 @@
     --cor-hover: #1608DB;
   }
 
+  * {
+    box-sizing: border-box;
+  }
+
   body {
     font-family: 'Segoe UI', sans-serif;
     background-color: var(--cor-fundo);
     color: var(--cor-texto);
-    padding: 20px;
     margin: 0;
+    padding: 0;
   }
 
   input, button {
@@ -30,45 +34,24 @@
     border-radius: 10px;
     font-size: 16px;
     transition: all 0.3s ease;
+    width: 100%;
   }
 
   input {
     background-color: #1c1c3a;
     color: var(--cor-texto);
     border: 1px solid var(--cor-borda);
-    width: 100%;
+  }
+
+  #loginContainer {
     max-width: 400px;
+    margin: 10vh auto;
+    padding: 30px;
+    background-color: var(--cor-card);
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 198, 112, 0.2);
+    text-align: center;
   }
-#loginContainer {
-  max-width: 400px;
-  margin: 10vh auto;
-  padding: 30px;
-  background-color: var(--cor-card);
-  border-radius: 15px;
-  box-shadow: 0 8px 16px rgba(0, 198, 112, 0.2);
-  text-align: center;
-}
-
-@media (max-width: 600px) {
-  body {
-    padding: 10px;
-  }
-
-  input, button {
-    font-size: 14px;
-    width: 100%;
-  }
-
-  #loginContainer, .nota-card {
-    padding: 20px;
-  }
-
-  .menu button {
-    display: block;
-    margin: 8px 0;
-    width: 100%;
-  }
-}
 
   button {
     background: linear-gradient(135deg, var(--cor-secundaria), var(--cor-primaria));
@@ -85,11 +68,20 @@
   }
 
   #areaPrincipal {
-    animation: fadeIn 0.7s ease-in-out;
+    padding: 20px;
+    display: none;
+  }
+
+  .menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
   }
 
   .menu button {
-    margin-right: 10px;
+    flex: 1;
+    min-width: 120px;
   }
 
   .nota-card {
@@ -107,23 +99,34 @@
     box-shadow: 0 6px 16px rgba(0, 198, 112, 0.4);
   }
 
-  
   #quillEditor {
     background-color: #1c1c3a;
     border-radius: 10px;
     border: 1px solid var(--cor-borda);
     color: var(--cor-texto);
   }
+
   #drawflow {
     background-color: #1a1b3a;
     border: 2px dashed var(--cor-borda);
     border-radius: 12px;
-    box-shadow: inset 0 0 20px rgba(72, 199, 196, 0.2);
+    height: 400px;
+    overflow: auto;
   }
 
   h2, h3, h4 {
     color: var(--cor-destaque);
     font-weight: 700;
+  }
+
+  @media (max-width: 768px) {
+    #loginContainer, #areaPrincipal {
+      padding: 15px;
+    }
+
+    .menu {
+      flex-direction: column;
+    }
   }
 
   @keyframes fadeIn {
@@ -135,7 +138,7 @@
     background: var(--cor-destaque);
     color: #000;
   }
-</style>
+  </style>
 
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/drawflow/dist/drawflow.min.css" />
